@@ -1,17 +1,69 @@
 window.onload = init;
-let canvas, ctx, width, height;
+let ctx, width, height;
+let canvas, stopButton,applyButton, numberOfBallInput;
 let numberOfBall = 10;
 let ballArray=[];
+let stateMotion = true;
 let colorArray = ['red','green','pink','gray','yellow','cyan'];
+let animationId;
 
 function init() {
   console.log('init called');
+  define();
+  setParameter();
+  start();
+}
+
+function define() {
   canvas = document.querySelector('#myCanvas');
   ctx = canvas.getContext('2d');
   width = canvas.width;
   height = canvas.height;
+  numberOfBallInput = document.querySelector('#numberOfBalls');
+  applyButton = document.querySelector('#applyButton');
+  stopButton = document.querySelector('#stopButton');
+
+  applyButton.addEventListener('click', setParameter);
+  stopButton.addEventListener('click', stopToggle);
+}
+
+function start() {
   generateBalls(numberOfBall);
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
   animate();
+}
+
+function setParameter() {
+  console.log('numberOfBallElement.value = '+numberOfBallInput.value);
+  if (numberOfBallInput.value) {
+    numberOfBall = numberOfBallInput.value;
+  }
+  start();
+  // debug();
+}
+
+function stopToggle() {
+  if (stateMotion) {
+    for (var i=0, max = ballArray.length; i < max; i++) {
+      var ball = ballArray[i];
+      ball.cacheSpeedX = ball.speedX;
+      ball.cacheSpeedY = ball.speedY;
+      ball.speedX = 0;
+      ball.speedY = 0;
+      stateMotion = false;
+      stopButton.innerHTML = 'Continue';
+    }
+  } else {
+    for (var i=0, max = ballArray.length; i < max; i++) {
+      var ball = ballArray[i];
+      ball.speedX = ball.cacheSpeedX;
+      ball.speedY = ball.cacheSpeedY;
+      stateMotion = true;
+      stopButton.innerHTML = 'Stop';
+    }
+  }
 }
 
 function generateBalls(numberOfBall) {
@@ -22,8 +74,8 @@ function generateBalls(numberOfBall) {
   	  y:height/2, // start from center
   	  color:colorArray[Math.round(Math.random() * 100) % colorArray.length], // between 0 to length of colorArray
   	  radius:10 + Math.round(Math.random() * 100) % 90,  // between 10 and 100
-  	  speedX:-10 + Math.round(Math.random() * 100) % 20, // between -10 and +10
-  	  speedY:-10 + Math.round(Math.random() * 100) % 20, // between -10 and +10
+  	  speedX:-5 + Math.round(Math.random() * 100) % 10, // between -5 and +5
+  	  speedY:-5 + Math.round(Math.random() * 100) % 10, // between -5 and +5
   	}
 
   	ballArray.push(ball);
@@ -32,12 +84,19 @@ function generateBalls(numberOfBall) {
   console.log('ballArray.length = ' + ballArray.length);
 }
 
+function debug() {
+  for (var i=0, max = ballArray.length; i < max; i++) {
+    var ball = ballArray[i];
+    console.log('speedX = '+ball.speedX);
+    console.log('speedY = '+ball.speedY);
+  }
+}
+
 function animate() {
-  console.log('animate');
 	ctx.clearRect(0,0,width,height);
 	moveBall();
   bounceWhenHitWall();
-	requestAnimationFrame(animate);
+	animationId = requestAnimationFrame(animate);
 }
 
 function moveBall() {
