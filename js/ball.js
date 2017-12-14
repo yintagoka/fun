@@ -83,7 +83,7 @@ function addColorComponent() {
 
   let colorElements = document.querySelectorAll('#colors input[type=color]');
   let removeButtons = document.querySelectorAll('#colors input[type=color]+button');
-  let brElements = document.querySelectorAll('#colors input[type=color]+button+br');
+  let brElements = document.querySelectorAll('#colors br');
   for (let i=0, max=colorElements.length; i<max; i++) {
     let colorElement = colorElements[i];
     let removeButton = removeButtons[i];
@@ -98,6 +98,11 @@ function addColorComponent() {
   let brElement = document.createElement('br');
 
   inputColor.setAttribute('type','color');
+  let randomColor = generateRandomColor();
+  let hexRandomColor = randomColor.toString(16);
+  console.log('randomColor = '+randomColor);
+  console.log('hexRandomColor = '+hexRandomColor);
+  inputColor.value = '#'+hexRandomColor;
 
   inputColor.setAttribute('id','color'+colorElements.length);
   removeButton.setAttribute('id','removeColor'+colorElements.length);
@@ -106,9 +111,9 @@ function addColorComponent() {
   removeButton.innerHTML = 'Remove';
   removeButton.addEventListener('click', removeColorComponent);
 
-  colorFieldset.insertBefore(inputColor, addColorButton);
-  colorFieldset.insertBefore(removeButton, addColorButton);
-  colorFieldset.insertBefore(brElement, addColorButton);
+  colorFieldset.appendChild(brElement);
+  colorFieldset.appendChild(inputColor);
+  colorFieldset.appendChild(removeButton);
 }
 
 function removeColorComponent(event) {
@@ -123,13 +128,11 @@ function removeColorComponent(event) {
   document.querySelector('#'+colorElementId).outerHTML='';
   document.querySelector('#'+removeButtonId).outerHTML='';
   document.querySelector('#'+brElementId).outerHTML='';
-  // removeElement(colorElementId);
-  // removeElement(removeButtonId);
 }
 
-function removeElement(id) {
-  let element = document.querySelector('#'+id);
-  element.parentElement.removeChild(element);
+function generateRandomColor() {
+  // 16777215 is the decimal number of ffffff
+  return Math.round(Math.random() * 100000000) % (16777215 + 1);
 }
 
 function generateBalls(numberOfBall) {
