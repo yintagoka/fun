@@ -1,10 +1,10 @@
 window.onload = init;
 let ctx, width, height;
-let canvas, stopButton,applyButton, numberOfBallInput;
+let canvas, stopButton,applyButton, numberOfBallInput, addColorButton, colorFieldset;
 let numberOfBall = 10;
 let ballArray=[];
 let stateMotion = true;
-let colorArray = ['red','green','pink','gray','yellow','cyan'];
+let colorArray = [];
 let animationId;
 
 function init() {
@@ -22,9 +22,12 @@ function define() {
   numberOfBallInput = document.querySelector('#numberOfBalls');
   applyButton = document.querySelector('#applyButton');
   stopButton = document.querySelector('#stopButton');
+  addColorButton = document.querySelector('#addColor');
+  colorFieldset = document.querySelector('#colors');
 
   applyButton.addEventListener('click', setParameter);
   stopButton.addEventListener('click', stopToggle);
+  addColorButton.addEventListener('click', addColorComponent);
 }
 
 function start() {
@@ -40,14 +43,23 @@ function setParameter() {
   if (numberOfBallInput.value) {
     numberOfBall = numberOfBallInput.value;
   }
+  console.log('setting colors');
+  let colorElements = document.querySelectorAll('input[type=color]');
+  if (colorElements) {
+    colorArray=[];
+    for (let i=0, max=colorElements.length;i<max;i++) {
+      let colorElement = colorElements[i];
+      colorArray.push(colorElement.value);
+    }
+  }
   start();
   // debug();
 }
 
 function stopToggle() {
-  if (stateMotion) {
-    for (var i=0, max = ballArray.length; i < max; i++) {
-      var ball = ballArray[i];
+  if (stateMotion) { // stop balls
+    for (let i=0, max = ballArray.length; i < max; i++) {
+      let ball = ballArray[i];
       ball.cacheSpeedX = ball.speedX;
       ball.cacheSpeedY = ball.speedY;
       ball.speedX = 0;
@@ -55,9 +67,9 @@ function stopToggle() {
       stateMotion = false;
       stopButton.innerHTML = 'Continue';
     }
-  } else {
-    for (var i=0, max = ballArray.length; i < max; i++) {
-      var ball = ballArray[i];
+  } else { // move balls
+    for (let i=0, max = ballArray.length; i < max; i++) {
+      let ball = ballArray[i];
       ball.speedX = ball.cacheSpeedX;
       ball.speedY = ball.cacheSpeedY;
       stateMotion = true;
@@ -66,14 +78,68 @@ function stopToggle() {
   }
 }
 
+function addColorComponent() {
+  console.log('addColor');
+
+  let colorElements = document.querySelectorAll('#colors input[type=color]');
+  let removeButtons = document.querySelectorAll('#colors input[type=color]+button');
+  let brElements = document.querySelectorAll('#colors input[type=color]+button+br');
+  for (let i=0, max=colorElements.length; i<max; i++) {
+    let colorElement = colorElements[i];
+    let removeButton = removeButtons[i];
+    let brElement = brElements[i];
+    colorElement.setAttribute('id','color'+i);
+    removeButton.setAttribute('id','removeColor'+i);
+    brElement.setAttribute('id','br'+i);
+  }
+
+  let inputColor = document.createElement('input');
+  let removeButton = document.createElement('button');
+  let brElement = document.createElement('br');
+
+  inputColor.setAttribute('type','color');
+
+  inputColor.setAttribute('id','color'+colorElements.length);
+  removeButton.setAttribute('id','removeColor'+colorElements.length);
+  brElement.setAttribute('id','br'+colorElements.length);
+
+  removeButton.innerHTML = 'Remove';
+  removeButton.addEventListener('click', removeColorComponent);
+
+  colorFieldset.insertBefore(inputColor, addColorButton);
+  colorFieldset.insertBefore(removeButton, addColorButton);
+  colorFieldset.insertBefore(brElement, addColorButton);
+}
+
+function removeColorComponent(event) {
+  console.log('remove color component');
+  let removeButton = event.target;
+  let removeButtonId = removeButton.getAttribute('id');
+  let colorElementId = removeButton.getAttribute('id').replace('removeColor','color');
+  let brElementId = removeButton.getAttribute('id').replace('removeColor','br');
+  console.log('removeButtonId = '+removeButtonId);
+  console.log('colorElementId = '+colorElementId);
+  let colorElement = document.querySelector('#'+colorElementId);
+  document.querySelector('#'+colorElementId).outerHTML='';
+  document.querySelector('#'+removeButtonId).outerHTML='';
+  document.querySelector('#'+brElementId).outerHTML='';
+  // removeElement(colorElementId);
+  // removeElement(removeButtonId);
+}
+
+function removeElement(id) {
+  let element = document.querySelector('#'+id);
+  element.parentElement.removeChild(element);
+}
+
 function generateBalls(numberOfBall) {
   ballArray = [];
-  for (var i = 0; i < numberOfBall; i++) {
-  	var ball = {
+  for (let i = 0; i < numberOfBall; i++) {
+  	let ball = {
   	  x:width/2,  // start from center
   	  y:height/2, // start from center
   	  color:colorArray[Math.round(Math.random() * 100) % colorArray.length], // between 0 to length of colorArray
-  	  radius:10 + Math.round(Math.random() * 100) % 90,  // between 10 and 100
+  	  radius:10 + Math.round(Math.random() * 100) % 90, // between 10 and 100
   	  speedX:-5 + Math.round(Math.random() * 100) % 10, // between -5 and +5
   	  speedY:-5 + Math.round(Math.random() * 100) % 10, // between -5 and +5
   	}
@@ -85,8 +151,8 @@ function generateBalls(numberOfBall) {
 }
 
 function debug() {
-  for (var i=0, max = ballArray.length; i < max; i++) {
-    var ball = ballArray[i];
+  for (let i=0, max = ballArray.length; i < max; i++) {
+    let ball = ballArray[i];
     console.log('speedX = '+ball.speedX);
     console.log('speedY = '+ball.speedY);
   }
@@ -100,8 +166,8 @@ function animate() {
 }
 
 function moveBall() {
-  for (var i=0, max = ballArray.length; i < max; i++) {
-  	var ball = ballArray[i];
+  for (let i=0, max = ballArray.length; i < max; i++) {
+  	let ball = ballArray[i];
     ball.x += ball.speedX;
     ball.y += ball.speedY;
     drawCircle(ball);
@@ -109,8 +175,8 @@ function moveBall() {
 }
 
 function bounceWhenHitWall() {
-  for (var i = 0, max = ballArray.length; i < max; i++) {
-    var ball = ballArray[i];
+  for (let i = 0, max = ballArray.length; i < max; i++) {
+    let ball = ballArray[i];
     if (ball.x + ball.radius >= width || ball.x - ball.radius <= 0) {
       ball.speedX *= -1;
     }
